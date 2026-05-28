@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: elo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-elo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-elo_password}
+      POSTGRES_DB: ${POSTGRES_DB:-elo}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/seeds:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-elo} -d ${POSTGRES_DB:-elo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - elo-net
+
+  # Backend는 개발 시 host에서 직접 실행하는 것을 권장 (핫리로드 편의성)
+  # docker로 실행하려면 아래 주석 해제
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: elo-backend
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-elo}:${POSTGRES_PASSWORD:-elo_password}@postgres:5432/${POSTGRES_DB:-elo}
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./backend:/app
+  #   networks:
+  #     - elo-net
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: elo-frontend
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./frontend/.env.local
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - elo-net
+
+volumes:
+  postgres_data:
+    name: elo-postgres-data
+
+networks:
+  elo-net:
+    name: elo-net
+    driver: bridge
