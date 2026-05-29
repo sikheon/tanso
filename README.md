@@ -79,15 +79,18 @@ cd tanso
 
 ### ⚡ Windows 자동 설치 (한 줄)
 
-Windows라면 아래 두 단계로 끝납니다 (아래 §2~§6의 수동 절차를 생략):
+Windows 10/11이라면 아래로 끝납니다 (아래 §2~§6 수동 절차 모두 생략):
 
 ```cmd
-setup.bat                        :: venv + 의존성 + Postgres + 마이그레이션 + 시드
+setup.bat                        :: Python/Node/Docker 자동 설치(winget) + venv + 의존성
+                                 ::  + Postgres 컨테이너 + 마이그레이션 + 시드
 :: .env / frontend\.env.local 열어서 API 키 입력
 start.bat                        :: 백엔드 8000 + 프론트 3000 동시 기동
 start.bat 8000 8010              :: 프론트를 8010으로 띄우려면 인자로 전달
 stop.bat                         :: 종료
 ```
+
+**setup.bat은 winget을 사용해서 Python 3.12 / Node.js LTS / Docker Desktop이 없으면 자동으로 설치합니다.** UAC(관리자 권한 승인) 팝업이 한 번 뜨고, Docker Desktop 첫 설치 시 WSL2 활성화로 재부팅이 필요할 수 있습니다 — 그 경우 재부팅 후 setup.bat을 한 번 더 실행하면 됩니다.
 
 > macOS/Linux는 아래 §2~§6 수동 절차 따라주세요.
 

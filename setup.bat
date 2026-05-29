@@ -8,16 +8,78 @@ echo   E.L.O - One-shot setup
 echo ===============================================
 echo.
 
-REM ----- 1. Prereq check -----
+REM ----- 1. Prereq check (with winget auto-install) -----
 echo [1/7] Checking prerequisites...
+
+where winget >nul 2>&1
+set HAS_WINGET=1
+if errorlevel 1 set HAS_WINGET=0
+
+REM Python 3.12+
 where python >nul 2>&1
-if errorlevel 1 (echo   [X] Python not found. Install Python 3.12+ from python.org and re-run. & goto :fail)
+if errorlevel 1 (
+    if "!HAS_WINGET!"=="1" (
+        echo   [.] Python not found - installing via winget ^(UAC prompt may appear^)...
+        winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements --silent
+        REM Refresh PATH for current session
+        for /f "tokens=2*" %%a in ('reg query "HKCU\Environment" /v PATH 2^>nul') do set "USERPATH=%%b"
+        set "PATH=!PATH!;!USERPATH!"
+        where python >nul 2>&1 || (echo   [X] Python still missing after install. Open a new terminal and re-run setup.bat. & goto :fail)
+    ) else (
+        echo   [X] Python not found and winget unavailable. Install Python 3.12+ from python.org. & goto :fail
+    )
+)
+
+REM Node.js 20+
 where node >nul 2>&1
-if errorlevel 1 (echo   [X] Node.js not found. Install Node.js 20+ from nodejs.org and re-run. & goto :fail)
+if errorlevel 1 (
+    if "!HAS_WINGET!"=="1" (
+        echo   [.] Node.js not found - installing via winget...
+        winget install -e --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements --silent
+        for /f "tokens=2*" %%a in ('reg query "HKCU\Environment" /v PATH 2^>nul') do set "USERPATH=%%b"
+        set "PATH=!PATH!;!USERPATH!;%ProgramFiles%\nodejs"
+        where node >nul 2>&1 || (echo   [X] Node.js still missing. Open a new terminal and re-run setup.bat. & goto :fail)
+    ) else (
+        echo   [X] Node.js not found and winget unavailable. Install Node 20+ from nodejs.org. & goto :fail
+    )
+)
+
+REM Docker Desktop
 where docker >nul 2>&1
-if errorlevel 1 (echo   [X] Docker not found. Install Docker Desktop and re-run. & goto :fail)
+if errorlevel 1 (
+    if "!HAS_WINGET!"=="1" (
+        echo   [.] Docker Desktop not found - installing via winget ^(this can take a few minutes^)...
+        winget install -e --id Docker.DockerDesktop --accept-source-agreements --accept-package-agreements
+        echo.
+        echo   [!] Docker Desktop install finished. If it asked you to log out / reboot for WSL2,
+        echo       please do that now, then run setup.bat again.
+        echo       If no reboot was requested, just launch "Docker Desktop" from the Start Menu
+        echo       once, accept the terms, and re-run setup.bat.
+        goto :fail
+    ) else (
+        echo   [X] Docker not found and winget unavailable. Install Docker Desktop manually. & goto :fail
+    )
+)
+
+REM Daemon running?
 docker info >nul 2>&1
-if errorlevel 1 (echo   [X] Docker is installed but the daemon is not running. Start Docker Desktop and re-run. & goto :fail)
+if errorlevel 1 (
+    echo   [.] Docker daemon not running - attempting to launch Docker Desktop...
+    if exist "%ProgramFiles%\Docker\Docker\Docker Desktop.exe" (
+        start "" "%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+    ) else (
+        echo   [X] Docker Desktop.exe not at expected path. Start it manually and re-run. & goto :fail
+    )
+    echo   [.] Waiting up to 90s for Docker daemon to come online...
+    set /a wtries=0
+    :wait_docker
+    set /a wtries+=1
+    if !wtries! GTR 45 (echo   [X] Docker daemon did not come online in 90s. Start Docker Desktop manually and re-run. & goto :fail)
+    timeout /t 2 /nobreak > nul
+    docker info >nul 2>&1
+    if errorlevel 1 goto :wait_docker
+)
+
 for /f "tokens=2" %%v in ('python --version 2^>^&1') do set PYVER=%%v
 echo   [OK] Python !PYVER!, Node, Docker
 
