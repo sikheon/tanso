@@ -68,6 +68,10 @@ tanso/
 - **Python 3.12+**
 - **Node.js 20+**
 - **Docker Desktop** (PostgreSQL+PostGIS 컨테이너용)
+  - Docker Desktop은 내부적으로 **WSL2**를 엔진으로 사용합니다.
+  - **Windows 11**: 대개 WSL2가 미리 활성화돼 있어 별도 작업 없음.
+  - **Windows 10**: WSL2 활성화가 필요하며, 최초 1회 **재부팅**이 발생할 수 있습니다.
+  - 활성화는 Docker Desktop 설치 과정에서 자동으로 처리되므로 `wsl` 명령을 직접 다룰 필요는 없습니다.
 - **Git**
 
 ### 1. 저장소 클론

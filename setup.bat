@@ -48,16 +48,23 @@ REM Docker Desktop
 where docker >nul 2>&1
 if errorlevel 1 (
     if "!HAS_WINGET!"=="1" (
-        echo   [.] Docker Desktop not found - installing via winget ^(this can take a few minutes^)...
+        echo.
+        echo   [!] Docker Desktop not found.
+        echo       Docker Desktop uses WSL2 as its engine on Windows.
+        echo         - Windows 11: usually no reboot
+        echo         - Windows 10: WSL2 activation may require ONE reboot
+        echo       Installing via winget now ^(this can take a few minutes^)...
+        echo.
         winget install -e --id Docker.DockerDesktop --accept-source-agreements --accept-package-agreements
         echo.
-        echo   [!] Docker Desktop install finished. If it asked you to log out / reboot for WSL2,
-        echo       please do that now, then run setup.bat again.
-        echo       If no reboot was requested, just launch "Docker Desktop" from the Start Menu
-        echo       once, accept the terms, and re-run setup.bat.
+        echo   [!] Docker Desktop install finished.
+        echo       - If WSL2 activation prompted you to reboot, reboot now and re-run setup.bat.
+        echo       - Otherwise, launch "Docker Desktop" once from the Start Menu, accept the
+        echo         terms, then re-run setup.bat.
         goto :fail
     ) else (
-        echo   [X] Docker not found and winget unavailable. Install Docker Desktop manually. & goto :fail
+        echo   [X] Docker not found and winget unavailable.
+        echo       Install Docker Desktop manually ^(WSL2 may need to be enabled - 1 reboot^). & goto :fail
     )
 )
 
