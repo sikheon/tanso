@@ -77,6 +77,20 @@ git clone <repo-url> tanso
 cd tanso
 ```
 
+### ⚡ Windows 자동 설치 (한 줄)
+
+Windows라면 아래 두 단계로 끝납니다 (아래 §2~§6의 수동 절차를 생략):
+
+```cmd
+setup.bat                        :: venv + 의존성 + Postgres + 마이그레이션 + 시드
+:: .env / frontend\.env.local 열어서 API 키 입력
+start.bat                        :: 백엔드 8000 + 프론트 3000 동시 기동
+start.bat 8000 8010              :: 프론트를 8010으로 띄우려면 인자로 전달
+stop.bat                         :: 종료
+```
+
+> macOS/Linux는 아래 §2~§6 수동 절차 따라주세요.
+
 ### 2. API 키 발급
 
 [`docs/setup-api-keys.md`](docs/setup-api-keys.md) 가이드 따라 4종 키 발급:
